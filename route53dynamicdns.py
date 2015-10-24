@@ -14,6 +14,9 @@ if len(sys.argv) == 1:
 
 arg_parser = argparse.ArgumentParser()
 
+arg_parser.add_argument('--public-address', action='store_true',
+	help='use public IP address rather than local one')
+
 arg_parser.add_argument('--wait-for-route53-propagation', action='store_true',
 	help='wait for update to propagate to all Route53 servers before exiting')
 
@@ -22,12 +25,16 @@ arg_parser.add_argument('host_name',
 
 args = arg_parser.parse_args()
 
-# Get local IP address that is used for Internet access.
-# from: http://stackoverflow.com/a/166589/98286
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.connect(('8.8.8.8', 53))
-ip = s.getsockname()[0]
-s.close()
+if args.public_address:
+	import ipify
+	ip = ipify.get_ip()
+else:
+	# Get local IP address that is used for Internet access.
+	# from: http://stackoverflow.com/a/166589/98286
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(('8.8.8.8', 53))
+	ip = s.getsockname()[0]
+	s.close()
 
 r53 = boto3.client('route53')
 
