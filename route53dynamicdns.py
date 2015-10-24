@@ -49,9 +49,17 @@ if zone_id is None:
 
 log('Getting existing record\'s TTL')
 
-ttl = r53.list_resource_record_sets(
+record_set = r53.list_resource_record_sets(
 		HostedZoneId=zone_id, StartRecordName=args.host_name, StartRecordType='A', MaxItems='1'
-	)['ResourceRecordSets'][0]['TTL']
+	)['ResourceRecordSets'][0]
+
+records = record_set['ResourceRecords']
+if len(records) == 1:
+	if records[0]['Value'] == ip:
+		log('%s is already set to correct address %s' % (args.host_name, ip))
+		sys.exit(0)
+
+ttl = record_set['TTL']
 
 log('Setting %s to point to %s with TTL %d' % (args.host_name, ip, ttl))
 
