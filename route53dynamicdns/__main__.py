@@ -41,10 +41,16 @@ def main():
 
     zone_id = None
 
+    longest_matching_zone_name_length = -1
+
     for zone in zones['HostedZones']:
-        if args.host_name.endswith(zone['Name']):
-            zone_id = zone['Id']
-            break
+        zone_name = zone['Name']
+        if args.host_name.endswith(zone_name):
+            # It's quite possible that a user might have more than one plausible matching zone, because they might have e.g. example.com and sub.example.com. If we have more than one match then we want to use the most-specific one, which will be the longest one:
+            zone_name_length = len(zone_name)
+            if zone_name_length > longest_matching_zone_name_length:
+                zone_id = zone['Id']
+                longest_matching_zone_name_length = zone_name_length
 
     if zone_id is None:
         raise Exception('No Route53 zone found for %s' % args.host_name)
