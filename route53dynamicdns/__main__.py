@@ -82,11 +82,18 @@ def main():
 
         existing_ttl = None
 
-        if len(record_sets) > 0:
+        if len(record_sets) > 1:
+            # This shouldn't be able to happen as far as I'm aware.
+            raise Exception("Multiple record sets returned, and we don't know how to handle that.")
+
+        elif len(record_sets) == 1:
             record_set = record_sets[0]
             records = record_set.get('ResourceRecords', [])
 
-            if len(records) == 1:
+            if len(records) > 1:
+                raise Exception('Multiple addresses found on %s record so this record has been modified by someone or something other than this tool. Please delete all but one of the values to use the record with this tool.' % record_type)
+
+            elif len(records) == 1:
                 existing_ttl = record_set['TTL']
                 existing_ip = records[0]['Value']
 
