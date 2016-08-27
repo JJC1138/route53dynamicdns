@@ -30,8 +30,8 @@ def main():
     args = arg_parser.parse_args()
 
     if args.public_address:
-        import ipify
-        ip = ipify.get_ip()
+        import requests
+        ip = requests.get('https://ipv4.myexternalip.com/raw').text.strip()
     else:
         # Get local IP address that is used for Internet access.
         # from: http://stackoverflow.com/a/166589/98286
