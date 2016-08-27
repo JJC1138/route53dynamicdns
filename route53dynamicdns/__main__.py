@@ -13,13 +13,16 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.append('-h')
 
-    arg_parser = argparse.ArgumentParser()
+    arg_parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     arg_parser.add_argument('--public-address', action='store_true',
         help='use public IP address rather than local one')
 
     arg_parser.add_argument('--wait-for-route53-propagation', action='store_true',
         help='wait for update to propagate to all Route53 servers before exiting')
+
+    arg_parser.add_argument('--ttl', type=int, default=60, # This default is the TTL used by DynDNS, for example.
+        help='TTL (Time To Live) value to use for the record')
 
     arg_parser.add_argument('host_name',
         help='the host name for the entry to update')
@@ -55,21 +58,7 @@ def main():
     if zone_id is None:
         raise Exception('No Route53 zone found for %s' % args.host_name)
 
-    log('Getting existing record\'s TTL')
-
-    record_set = r53.list_resource_record_sets(
-            HostedZoneId=zone_id, StartRecordName=args.host_name, StartRecordType='A', MaxItems='1'
-        )['ResourceRecordSets'][0]
-
-    records = record_set['ResourceRecords']
-    if len(records) == 1:
-        if records[0]['Value'] == ip:
-            log('%s is already set to correct address %s' % (args.host_name, ip))
-            sys.exit(0)
-
-    ttl = record_set['TTL']
-
-    log('Setting %s to point to %s with TTL %d' % (args.host_name, ip, ttl))
+    log('Setting %s to point to %s with TTL %d' % (args.host_name, ip, args.ttl))
 
     response = r53.change_resource_record_sets(
         HostedZoneId = zone_id,
@@ -80,7 +69,7 @@ def main():
                     'ResourceRecordSet': {
                         'Name': args.host_name,
                         'Type': 'A',
-                        'TTL': ttl,
+                        'TTL': args.ttl,
                         'ResourceRecords' : [
                             {
                                 'Value': ip
