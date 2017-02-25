@@ -74,7 +74,7 @@ def main():
             ipv6 = s.getsockname()[0]
     except:
         ipv6 = None
-        
+
     changes = []
 
     for doing_ipv6_change in (False, True):
