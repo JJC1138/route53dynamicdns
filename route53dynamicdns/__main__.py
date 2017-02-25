@@ -94,7 +94,12 @@ def main():
 
         elif len(record_sets) == 1:
             record_set = record_sets[0]
-            records = record_set.get('ResourceRecords', [])
+
+            if record_set['Type'] == record_type and (record_set['Name'] == args.host_name or record_set['Name'] == '%s.' % args.host_name):
+                records = record_set.get('ResourceRecords', [])
+            else:
+                # The API has returned some other record set which means there wasn't an exact match for the one we asked for.
+                records = []
 
             if len(records) > 1:
                 raise Exception('Multiple addresses found on %s record so this record has been modified by someone or something other than this tool. Please delete all but one of the values to use the record with this tool.' % record_type)
