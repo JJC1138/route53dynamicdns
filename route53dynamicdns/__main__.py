@@ -113,9 +113,12 @@ def main():
                     continue
 
             elif len(records) == 0:
-                if ip is None:
-                    log("No %s address record exists and we don't have an address of that type" % ip_version_string)
-                    continue
+                record_sets = []
+
+        if len(record_sets) == 0:
+            if ip is None:
+                log("No %s address record exists and we don't have an address of that type" % ip_version_string)
+                continue
 
         if ip:
             ttl = args.ttl or existing_ttl or default_ttl
