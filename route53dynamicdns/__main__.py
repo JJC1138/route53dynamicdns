@@ -82,6 +82,13 @@ def main():
                 IPV6_PREFER_SRC_PUBLIC = 0x0002
                 s.setsockopt(socket.IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,
                     IPV6_PREFER_SRC_TMP if args.temporary_address else IPV6_PREFER_SRC_PUBLIC)
+            elif 'bsd' in sys.platform or sys.platform.startswith('darwin'):
+                # Defined in the netinet6/in6.h header:
+                IPV6_PREFER_TEMPADDR = 63
+                s.setsockopt(socket.IPPROTO_IPV6, IPV6_PREFER_TEMPADDR,
+                    1 if args.temporary_address else 0)
+            else:
+                raise Exception("route53dynamicdns doesn't know how to do temporary or public IPv6 source address selection on this platform")
 
             s.connect(('2001:4860:4860::8888', 53))
             ipv6 = s.getsockname()[0]
