@@ -74,7 +74,7 @@ def main():
     try:
         with socket.socket(socket.AF_INET6, socket.SOCK_DGRAM) as s:
 
-            # Use a temporary (RFC 3041) or public address as desired:
+            # Use a temporary (RFC 4941) or public address as desired:
             if sys.platform.startswith('linux'):
                 # This interface is described in RFC 5014, and the constants themselves are specified in the linux/in6.h header:
                 IPV6_ADDR_PREFERENCES = 72
