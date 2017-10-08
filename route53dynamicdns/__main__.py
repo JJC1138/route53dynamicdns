@@ -26,6 +26,9 @@ def main():
     arg_parser.add_argument('--ttl', type=int,
         help="TTL (Time To Live) value to use (if not specified then the default is to use the existing record's value or %d if the record doesn't exist yet)" % default_ttl)
 
+    arg_parser.add_argument('--temporary-address', action='store_true',
+        help='use your temporary (also known as "private" or "ephemeral") IPv6 address rather than your public one')
+
     arg_parser.add_argument('host_name',
         help='the host name for the entry to update')
 
@@ -70,6 +73,16 @@ def main():
 
     try:
         with socket.socket(socket.AF_INET6, socket.SOCK_DGRAM) as s:
+
+            # Use a temporary (RFC 3041) or public address as desired:
+            if sys.platform.startswith('linux'):
+                # This interface is described in RFC 5014, and the constants themselves are specified in the linux/in6.h header:
+                IPV6_ADDR_PREFERENCES = 72
+                IPV6_PREFER_SRC_TMP = 0x0001
+                IPV6_PREFER_SRC_PUBLIC = 0x0002
+                s.setsockopt(socket.IPPROTO_IPV6, IPV6_ADDR_PREFERENCES,
+                    IPV6_PREFER_SRC_TMP if args.temporary_address else IPV6_PREFER_SRC_PUBLIC)
+
             s.connect(('2001:4860:4860::8888', 53))
             ipv6 = s.getsockname()[0]
     except:
